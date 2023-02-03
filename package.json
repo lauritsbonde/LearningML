@@ -29,6 +29,7 @@
 		"start": "react-scripts start",
 		"build": "react-scripts build",
 		"test": "NODE_OPTIONS=--experimental-vm-modules jest --verbose --watch-all",
+		"actionTest": "NODE_OPTIONS=--experimental-vm-modules jest --verbose",
 		"eject": "react-scripts eject"
 	},
 	"eslintConfig": {
