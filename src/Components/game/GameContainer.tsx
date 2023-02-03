@@ -52,7 +52,7 @@ const GameContainer: FC<props> = ({ flexSize }) => {
 			}
 		}, 1000 / 30);
 		return () => clearInterval(interval);
-	}, [game]);
+	}, [game, canvasRef]);
 
 	return (
 		<Box sx={{ flex: flexSize, position: 'relative', zIndex: 0 }}>

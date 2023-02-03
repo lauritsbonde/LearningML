@@ -1,4 +1,3 @@
-import { Image } from '@mui/icons-material';
 import { Box, Button, Input, SvgIcon, Typography } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import React, { FC } from 'react';
