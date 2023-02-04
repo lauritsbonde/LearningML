@@ -79,6 +79,9 @@ const GameContainer: FC<props> = ({ flexSize }) => {
 				<Button variant="contained" color="primary" onClick={() => tick()} disabled={autoTick}>
 					Manual Tick
 				</Button>
+				<Button variant="contained" color="info" onClick={() => game.newGeneration()}>
+					Manually create new generation
+				</Button>
 			</Box>
 		</Box>
 	);

@@ -48,7 +48,9 @@ export default class NeuralNetwork {
 					matrix.randomize();
 					this.weights.push(matrix);
 				}
-				this.biases.push(new Matrix(this.hiddenNodes, 1));
+				const bias = new Matrix(this.hiddenNodes, 1);
+				bias.randomize();
+				this.biases.push(bias);
 			}
 
 			// add the output layer
@@ -56,7 +58,9 @@ export default class NeuralNetwork {
 			matrix.randomize();
 			this.weights.push(matrix);
 
-			this.biases.push(new Matrix(this.outputNodes, 1));
+			const bias = new Matrix(this.outputNodes, 1);
+			bias.randomize();
+			this.biases.push(bias);
 		}
 	}
 
@@ -79,6 +83,15 @@ export default class NeuralNetwork {
 	mutate(learningRate: number) {
 		for (let i = 0; i < this.weights.length; i++) {
 			this.weights[i].map((x) => {
+				if (Math.random() < 0.1) {
+					return x + Math.random() * learningRate * 2 - learningRate;
+				} else {
+					return x;
+				}
+			});
+		}
+		for (let i = 0; i < this.biases.length; i++) {
+			this.biases[i].map((x) => {
 				if (Math.random() < 0.1) {
 					return x + Math.random() * learningRate * 2 - learningRate;
 				} else {
