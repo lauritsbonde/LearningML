@@ -28,6 +28,7 @@ export default class player extends base {
 		startSize?: { width: number; height: number },
 		worldSize?: { width: number; height: number },
 		brain?: NeuralNetwork,
+		brainHiddenLayers?: number,
 		maxSpeed?: number
 	) {
 		super(startPos, startSize);
@@ -50,7 +51,7 @@ export default class player extends base {
 		this.hiddenNodes = Math.floor(this.inputNodes * 1.5);
 		// 2 output nodes for x and y acceleration
 		this.outputNodes = 2;
-		this.brain = brain || new NeuralNetwork(this.inputNodes, this.hiddenNodes, this.outputNodes);
+		this.brain = brain || new NeuralNetwork(this.inputNodes, this.hiddenNodes, brainHiddenLayers || 2, this.outputNodes);
 
 		this.score = 0;
 		this.distanceTravelled = 0;

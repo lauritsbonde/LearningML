@@ -1,8 +1,6 @@
 import player from './player';
 import fruit from './fruit';
 import base from './base';
-import NeuralNetwork from './Brain/NerualNetwork';
-import Matrix from './Brain/Matrix';
 
 export default class world {
 	players: Array<player>;
@@ -20,7 +18,7 @@ export default class world {
 	constructor(worldSize?: { width: number; height: number }, numberOfFruits?: number, numberOfPlayers?: number, ticksBetweenNewGeneration?: number) {
 		this.worldSize = worldSize || { width: 601, height: 564 }; //601 and 564 are for my screen size, change it to your screen size
 
-		this.ticksBetweenNewGeneration = ticksBetweenNewGeneration || 30 * 10;
+		this.ticksBetweenNewGeneration = ticksBetweenNewGeneration || 30 * 30;
 		this.ticksSinceLastGeneration = 0;
 		this.generationCount = 0;
 
@@ -37,7 +35,7 @@ export default class world {
 	}
 
 	addPlayer() {
-		this.players.push(new player(this.players.length, this.numberOfFruits, undefined, undefined, this.worldSize));
+		this.players.push(new player(this.players.length, this.numberOfFruits, undefined, undefined, this.worldSize, undefined, 5));
 	}
 
 	spawnAllFruits() {
@@ -56,14 +54,6 @@ export default class world {
 		this.fruits = fruits;
 	}
 
-	spawnFruitForPlayer(player: player) {
-		const spawnpos = {
-			x: Math.floor(Math.random() * (this.worldSize.width - 40)),
-			y: Math.floor(Math.random() * (this.worldSize.height - 40)),
-		};
-		this.fruits[player.id].push(new fruit(spawnpos));
-	}
-
 	updatePlayers() {
 		for (let i = 0; i < this.players.length; i++) {
 			this.players[i].update(this.fruits[i]);
@@ -75,8 +65,10 @@ export default class world {
 			for (let j = 0; j < this.fruits[i].length; j++) {
 				if (this.overlappingRect(this.players[i], this.fruits[this.players[i].id][j])) {
 					this.players[i].score++;
-					this.fruits[this.players[i].id].splice(j, 1);
-					this.spawnFruitForPlayer(this.players[i]);
+					this.fruits[this.players[i].id][j] = new fruit({
+						x: Math.floor(Math.random() * (this.worldSize.width - 40)),
+						y: Math.floor(Math.random() * (this.worldSize.height - 40)),
+					});
 					this.updateLeaderboard();
 				}
 			}

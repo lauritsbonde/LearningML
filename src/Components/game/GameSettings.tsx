@@ -1,4 +1,4 @@
-import { Box, Button, Input, SvgIcon, Typography } from '@mui/material';
+import { Box, Button, Input, SvgIcon, Typography, FormControlLabel, Checkbox } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import React, { FC } from 'react';
 
@@ -6,6 +6,8 @@ interface props {
 	isOpen: boolean;
 	toggleSettings: () => void;
 	restartGame: () => void;
+	autoTick: boolean;
+	setAutoTick: (autoTick: boolean) => void;
 }
 
 const style = {
@@ -36,7 +38,7 @@ const style = {
 	},
 };
 
-const GameSettings: FC<props> = ({ isOpen, toggleSettings, restartGame }) => {
+const GameSettings: FC<props> = ({ isOpen, toggleSettings, restartGame, autoTick, setAutoTick }) => {
 	return (
 		<Box sx={isOpen ? style.openSettings : style.closedSettings}>
 			<SvgIcon component={SettingsIcon} sx={{ fontSize: '50px', cursor: 'pointer' }} onClick={toggleSettings} />
@@ -56,6 +58,10 @@ const GameSettings: FC<props> = ({ isOpen, toggleSettings, restartGame }) => {
 					<Button variant="contained" onClick={restartGame} color="error" sx={{ margin: '2% 0' }}>
 						Restart Game
 					</Button>
+
+					<Box>
+						<FormControlLabel control={<Checkbox checked={autoTick} onChange={() => setAutoTick(!autoTick)} size="medium" />} label="AutoTick" />
+					</Box>
 				</Box>
 			)}
 		</Box>
