@@ -3,65 +3,89 @@ import Matrix from './Matrix';
 export default class NeuralNetwork {
 	inputNodes: number;
 	hiddenNodes: number;
+	numberOfHiddenLayers: number;
 	outputNodes: number;
 
-	weightsIH: Matrix;
-	weightsHO: Matrix;
+	weights: Matrix[];
+	biases: Matrix[];
 
-	hiddenBias: Matrix;
-	outputBias: Matrix;
+	// weightsIH: Matrix;
+	// weightsHO: Matrix;
 
-	constructor(inputNodes: number, hiddenNodes: number, outputNodes: number, weights?: { weightsIH: Matrix; weightsHO: Matrix; hiddenBias: Matrix; outputBias: Matrix }, learningRate?: number) {
+	// hiddenBias: Matrix;
+	// outputBias: Matrix;
+
+	constructor(
+		inputNodes: number,
+		hiddenNodes: number,
+		numberOfHiddenLayers: number,
+		outputNodes: number,
+		// weights?: { weightsIH: Matrix; weightsHO: Matrix; hiddenBias: Matrix; outputBias: Matrix },
+		weights?: { weights: Matrix[]; biases: Matrix[] },
+		learningRate?: number
+	) {
 		this.inputNodes = inputNodes;
 		this.hiddenNodes = hiddenNodes;
+		this.numberOfHiddenLayers = numberOfHiddenLayers;
 		this.outputNodes = outputNodes;
 
 		if (weights !== undefined) {
-			this.weightsIH = weights.weightsIH;
-			this.weightsHO = weights.weightsHO;
-
-			this.hiddenBias = weights.hiddenBias;
-			this.outputBias = weights.outputBias;
+			this.weights = weights.weights;
+			this.biases = weights.biases;
 
 			this.mutate(learningRate || 0.05);
 		} else {
-			this.weightsIH = new Matrix(this.hiddenNodes, this.inputNodes);
-			this.weightsHO = new Matrix(this.outputNodes, this.hiddenNodes);
+			this.weights = [];
+			this.biases = [];
 
-			this.weightsHO.randomize();
-			this.weightsIH.randomize();
+			for (let i = 0; i < this.numberOfHiddenLayers; i++) {
+				if (i === 0) {
+					const matrix = new Matrix(this.hiddenNodes, this.inputNodes);
+					matrix.randomize();
+					this.weights.push(matrix);
+				} else {
+					const matrix = new Matrix(this.hiddenNodes, this.hiddenNodes);
+					matrix.randomize();
+					this.weights.push(matrix);
+				}
+				this.biases.push(new Matrix(this.hiddenNodes, 1));
+			}
 
-			this.hiddenBias = new Matrix(this.hiddenNodes, 1);
-			this.outputBias = new Matrix(this.outputNodes, 1);
+			// add the output layer
+			const matrix = new Matrix(this.outputNodes, this.hiddenNodes);
+			matrix.randomize();
+			this.weights.push(matrix);
 
-			this.hiddenBias.randomize();
-			this.outputBias.randomize();
+			this.biases.push(new Matrix(this.outputNodes, 1));
 		}
 	}
 
 	feedforward(input: number[]) {
 		let inputs: Matrix = Matrix.fromArray(input);
 
-		// Generating the hidden outputs
-		let hiddenOutputs: Matrix = Matrix.multiply(this.weightsIH, inputs);
-		hiddenOutputs.add(this.hiddenBias);
-		hiddenOutputs.map(this.sigmoid);
+		for (let i = 0; i < this.numberOfHiddenLayers; i++) {
+			inputs = Matrix.multiply(this.weights[i], inputs);
+			inputs.add(this.biases[i]);
+			inputs.map(this.tahn);
+		}
 
-		// Generating the output's output!
-		let outputOutputs: Matrix = Matrix.multiply(this.weightsHO, hiddenOutputs);
-		outputOutputs.add(this.outputBias);
-		outputOutputs.map(this.sigmoid);
+		const output = Matrix.multiply(this.weights[this.weights.length - 1], inputs);
+		output.add(this.biases[this.biases.length - 1]);
+		output.map(this.tahn);
 
-		outputOutputs.map((x: number) => x * 2 - 1);
-
-		return outputOutputs.toArray();
+		return output.toArray();
 	}
 
 	mutate(learningRate: number) {
-		this.weightsIH.map((x: number) => x + (Math.random() - 0.5) * learningRate);
-		this.weightsHO.map((x: number) => x + (Math.random() - 0.5) * learningRate);
-		this.hiddenBias.map((x: number) => x + (Math.random() - 0.5) * learningRate);
-		this.outputBias.map((x: number) => x + (Math.random() - 0.5) * learningRate);
+		for (let i = 0; i < this.weights.length; i++) {
+			this.weights[i].map((x) => {
+				if (Math.random() < 0.1) {
+					return x + Math.random() * learningRate * 2 - learningRate;
+				} else {
+					return x;
+				}
+			});
+		}
 	}
 
 	sigmoid(x: number) {
@@ -73,11 +97,9 @@ export default class NeuralNetwork {
 	}
 
 	copy() {
-		return new NeuralNetwork(this.inputNodes, this.hiddenNodes, this.outputNodes, {
-			weightsIH: this.weightsIH.copy(),
-			weightsHO: this.weightsHO.copy(),
-			hiddenBias: this.hiddenBias.copy(),
-			outputBias: this.outputBias.copy(),
+		return new NeuralNetwork(this.inputNodes, this.hiddenNodes, this.numberOfHiddenLayers, this.outputNodes, {
+			weights: this.weights.map((x) => x.copy()),
+			biases: this.biases.map((x) => x.copy()),
 		});
 	}
 }
