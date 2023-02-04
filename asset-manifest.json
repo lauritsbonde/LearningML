@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/LearningML/static/css/main.e6c13ad2.css",
-    "main.js": "/LearningML/static/js/main.a6c33b6f.js",
+    "main.js": "/LearningML/static/js/main.4e86f40a.js",
     "static/js/787.157bd1c4.chunk.js": "/LearningML/static/js/787.157bd1c4.chunk.js",
     "index.html": "/LearningML/index.html",
     "main.e6c13ad2.css.map": "/LearningML/static/css/main.e6c13ad2.css.map",
-    "main.a6c33b6f.js.map": "/LearningML/static/js/main.a6c33b6f.js.map",
+    "main.4e86f40a.js.map": "/LearningML/static/js/main.4e86f40a.js.map",
     "787.157bd1c4.chunk.js.map": "/LearningML/static/js/787.157bd1c4.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.a6c33b6f.js"
+    "static/js/main.4e86f40a.js"
   ]
 }
