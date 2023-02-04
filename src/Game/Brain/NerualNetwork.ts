@@ -16,12 +16,14 @@ export default class NeuralNetwork {
 		this.hiddenNodes = hiddenNodes;
 		this.outputNodes = outputNodes;
 
-		if (weights) {
+		if (weights !== undefined) {
 			this.weightsIH = weights.weightsIH;
 			this.weightsHO = weights.weightsHO;
+
 			this.hiddenBias = weights.hiddenBias;
 			this.outputBias = weights.outputBias;
-			this.mutate(learningRate || 1.05);
+
+			this.mutate(learningRate || 0.05);
 		} else {
 			this.weightsIH = new Matrix(this.hiddenNodes, this.inputNodes);
 			this.weightsHO = new Matrix(this.outputNodes, this.hiddenNodes);
@@ -50,17 +52,32 @@ export default class NeuralNetwork {
 		outputOutputs.add(this.outputBias);
 		outputOutputs.map(this.sigmoid);
 
+		outputOutputs.map((x: number) => x * 2 - 1);
+
 		return outputOutputs.toArray();
 	}
 
 	mutate(learningRate: number) {
-		this.weightsIH.map((x: number) => x * learningRate);
-		this.weightsHO.map((x: number) => x * learningRate);
-		this.hiddenBias.map((x: number) => x * learningRate);
-		this.outputBias.map((x: number) => x * learningRate);
+		this.weightsIH.map((x: number) => x + (Math.random() - 0.5) * learningRate);
+		this.weightsHO.map((x: number) => x + (Math.random() - 0.5) * learningRate);
+		this.hiddenBias.map((x: number) => x + (Math.random() - 0.5) * learningRate);
+		this.outputBias.map((x: number) => x + (Math.random() - 0.5) * learningRate);
 	}
 
 	sigmoid(x: number) {
 		return 1 / (1 + Math.exp(-x));
+	}
+
+	tahn(x: number) {
+		return Math.tanh(x);
+	}
+
+	copy() {
+		return new NeuralNetwork(this.inputNodes, this.hiddenNodes, this.outputNodes, {
+			weightsIH: this.weightsIH.copy(),
+			weightsHO: this.weightsHO.copy(),
+			hiddenBias: this.hiddenBias.copy(),
+			outputBias: this.outputBias.copy(),
+		});
 	}
 }

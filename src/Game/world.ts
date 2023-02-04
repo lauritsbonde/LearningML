@@ -1,26 +1,35 @@
 import player from './player';
 import fruit from './fruit';
 import base from './base';
+import NeuralNetwork from './Brain/NerualNetwork';
+import Matrix from './Brain/Matrix';
 
 export default class world {
 	players: Array<player>;
-	fruits: Array<fruit>;
+	fruits: Array<Array<fruit>>;
 
 	numberOfFruits: number;
 	numberOfPlayers: number;
 
 	worldSize: { width: number; height: number };
 
-	constructor(worldSize?: { width: number; height: number }, numberOfFruits?: number, numberOfPlayers?: number) {
+	ticksBetweenNewGeneration: number;
+	ticksSinceLastGeneration: number;
+	generationCount: number;
+
+	constructor(worldSize?: { width: number; height: number }, numberOfFruits?: number, numberOfPlayers?: number, ticksBetweenNewGeneration?: number) {
 		this.worldSize = worldSize || { width: 601, height: 564 }; //601 and 564 are for my screen size, change it to your screen size
 
-		this.numberOfFruits = numberOfFruits || 5;
-		this.fruits = new Array<fruit>();
-		for (let i = 0; i < this.numberOfFruits; i++) {
-			this.spawnFruit();
-		}
+		this.ticksBetweenNewGeneration = ticksBetweenNewGeneration || 30 * 10;
+		this.ticksSinceLastGeneration = 0;
+		this.generationCount = 0;
 
+		this.numberOfFruits = numberOfFruits || 5;
 		this.numberOfPlayers = numberOfPlayers || 1;
+
+		this.fruits = new Array<Array<fruit>>();
+		this.spawnAllFruits();
+
 		this.players = new Array<player>();
 		for (let i = 0; i < this.numberOfPlayers; i++) {
 			this.addPlayer();
@@ -28,32 +37,55 @@ export default class world {
 	}
 
 	addPlayer() {
-		this.players.push(new player(this.players.length, this.fruits.length, undefined, undefined, this.worldSize));
+		this.players.push(new player(this.players.length, this.numberOfFruits, undefined, undefined, this.worldSize));
 	}
 
-	spawnFruit() {
+	spawnAllFruits() {
+		const fruits = new Array<Array<fruit>>();
+		for (let i = 0; i < this.numberOfPlayers; i++) {
+			const fruitsForPlayer = new Array<fruit>();
+			for (let j = 0; j < this.numberOfFruits; j++) {
+				const spawnpos = {
+					x: Math.floor(Math.random() * (this.worldSize.width - 40)),
+					y: Math.floor(Math.random() * (this.worldSize.height - 40)),
+				};
+				fruitsForPlayer.push(new fruit(spawnpos));
+			}
+			fruits.push(fruitsForPlayer);
+		}
+		this.fruits = fruits;
+	}
+
+	spawnFruitForPlayer(player: player) {
 		const spawnpos = {
 			x: Math.floor(Math.random() * (this.worldSize.width - 40)),
 			y: Math.floor(Math.random() * (this.worldSize.height - 40)),
 		};
-		this.fruits.push(new fruit(spawnpos));
+		this.fruits[player.id].push(new fruit(spawnpos));
 	}
 
 	updatePlayers() {
-		this.players.forEach((player) => {
-			player.update(this.fruits);
-		});
+		for (let i = 0; i < this.players.length; i++) {
+			this.players[i].update(this.fruits[i]);
+		}
 	}
 
 	checkPlayerFruitCollision() {
-		this.players.forEach((player) => {
-			for (let i = 0; i < this.fruits.length; i++) {
-				if (this.overlappingRect(player, this.fruits[i])) {
-					player.score++;
-					this.fruits.splice(i, 1);
-					this.spawnFruit();
+		for (let i = 0; i < this.players.length; i++) {
+			for (let j = 0; j < this.fruits[i].length; j++) {
+				if (this.overlappingRect(this.players[i], this.fruits[this.players[i].id][j])) {
+					this.players[i].score++;
+					this.fruits[this.players[i].id].splice(j, 1);
+					this.spawnFruitForPlayer(this.players[i]);
+					this.updateLeaderboard();
 				}
 			}
+		}
+	}
+
+	updateLeaderboard() {
+		this.players.sort((a, b) => {
+			return b.score - a.score;
 		});
 	}
 
@@ -66,6 +98,37 @@ export default class world {
 	update() {
 		this.updatePlayers();
 		this.checkPlayerFruitCollision();
+		this.ticksSinceLastGeneration++;
+		if (this.ticksSinceLastGeneration >= this.ticksBetweenNewGeneration) {
+			this.newGeneration();
+		}
 		return this;
+	}
+
+	newGeneration() {
+		this.ticksSinceLastGeneration = 0;
+		this.generationCount++;
+
+		let bestPlayer = this.players[0]; //sorted by score
+		if (bestPlayer.score === 0) {
+			bestPlayer = this.players.sort((a, b) => {
+				return b.distanceTravelled - a.distanceTravelled;
+			})[0];
+		}
+
+		const bestPlayerBrain = this.players[0].brain.copy();
+		//reset the players
+		this.players = new Array<player>();
+
+		//add new players with the best player brain
+		for (let i = 0; i < this.numberOfPlayers; i++) {
+			const copyBrain = bestPlayerBrain.copy();
+			copyBrain.mutate(0.05);
+			this.players.push(new player(i, this.fruits.length, undefined, undefined, this.worldSize, copyBrain));
+		}
+
+		//reset the fruits
+		this.fruits = new Array<Array<fruit>>();
+		this.spawnAllFruits();
 	}
 }
